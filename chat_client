@@ -1,0 +1,5 @@
+#!/bin/bash
+#usage: chat_client ipaddress
+#example: chat_client localhost
+#example: chat_client 128.135.167.223
+telnet $1 $CHAT_SERVER_PORT

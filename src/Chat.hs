@@ -34,6 +34,7 @@ joinUser han var = do
 
 --broadcastMessage: broadcasts a message from user u to every user but u
 broadcastMessage :: User -> String -> [User] -> IO ()
+broadcastMessage _ _ [] = return ()
 broadcastMessage u str (x:xs)
     | x == u = mapM_ (writeMessage (str)) xs
     | otherwise = do
@@ -47,6 +48,7 @@ userQuit u var = do
     newList <- evaluate $ remUser u ls
     putMVar var newList
     return () where
+        remUser _ [] = []
         remUser user (x:xs)
             | user == x = xs
             | otherwise = x : remUser user xs

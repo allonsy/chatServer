@@ -78,6 +78,7 @@ chat use var = do
         then do
             putStrLn "Closing client"
             userQuit use var
+            --no goodbye because client has closed connection
             hClose hand
         else do
             recv <- hGetLine hand
@@ -85,6 +86,7 @@ chat use var = do
                 then do
                     putStrLn "Closing client"
                     userQuit use var
+                    hPutStrLn hand "Goodbye!"
                     hClose hand
                 else do
                     userList <- takeMVar var

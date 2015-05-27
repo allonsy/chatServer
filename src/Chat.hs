@@ -33,7 +33,10 @@ joinUser han var = do
         grabUserName (x:xs) = ident x
 
 --broadcastMessage: broadcasts a message from user u to every user but u
+--use MVar to lock writes to handles to prevent multiple threads
+--from writing to the same handle
 broadcastMessage :: User -> String -> [User] -> IO ()
+broadcastMessage _ _ [] = return () --shouldn't happen
 broadcastMessage u str (x:xs)
     | x == u = mapM_ (writeMessage (str)) xs
     | otherwise = do
@@ -45,8 +48,8 @@ userQuit u var = do
     ls <- takeMVar var
     broadcastMessage u ((show u) ++ " has left") ls
     newList <- evaluate $ remUser u ls
-    putMVar var newList
-    return () where
+    putMVar var newList where
+        remUser _ [] = [] --shouldn't happen
         remUser user (x:xs)
             | user == x = xs
             | otherwise = x : remUser user xs

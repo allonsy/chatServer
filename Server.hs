@@ -72,6 +72,7 @@ chat use var = do
         else do
             recv <- hGetLine hand
             --putStrLn $ "received: " ++ recv
-            userList <- readMVar var
+            userList <- takeMVar var --lock to avoid concurrent writes
             broadcastMessage use ((show use) ++ ": " ++ recv) userList
+            putMVar var userList
             chat use var

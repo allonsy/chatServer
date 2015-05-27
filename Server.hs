@@ -15,7 +15,7 @@ import Chat
 
 --Main: Set up socket and start forking
 main :: IO ()
-main = do
+main = withSocketsDo $ do
     portStr <- getEnv "CHAT_SERVER_PORT"
     let port = read portStr :: Int
     --now we grab our address information
@@ -36,11 +36,13 @@ main = do
     bindSocket sock (addrAddress address)
     
     --listen on socket
+    putStrLn "listening on socket"
     listen sock 10
     
     var <- newMVar []
     
     --call function to accept connections
+    putStrLn "accepting connections"
     acceptCons sock var
 
 --acceptCons: loops and accepts connections and then spawns child procs
@@ -53,10 +55,18 @@ acceptCons sock var = do
     forkIO (handleClient conn var)
     acceptCons sock var
 
+{-
+handleClient: takes in the new sockets and 
+initializes the user in the user list and prints instructions
+to the user. It then passes the socket off 
+to the text processing function chat 
+-}
+
 handleClient :: Socket -> MVar [User] -> IO ()
 handleClient sock var= do
     hand <- socketToHandle sock ReadWriteMode
     hSetBuffering hand LineBuffering
+    introduce hand
     newUser <- joinUser hand var
     chat newUser var
 
@@ -68,11 +78,28 @@ chat use var = do
         then do
             putStrLn "Closing client"
             userQuit use var
+            --no goodbye because client has closed connection
             hClose hand
         else do
             recv <- hGetLine hand
-            --putStrLn $ "received: " ++ recv
-            userList <- takeMVar var --lock to avoid concurrent writes
-            broadcastMessage use ((show use) ++ ": " ++ recv) userList
-            putMVar var userList
-            chat use var
+            if (quitCheck recv)
+                then do
+                    putStrLn "Closing client"
+                    userQuit use var
+                    hPutStrLn hand "Goodbye!"
+                    hClose hand
+                else do
+                    userList <- takeMVar var
+                    broadcastMessage use ((show use) ++ ": " ++ recv) userList
+                    putMVar var userList
+                    chat use var
+
+introduce :: Handle -> IO ()
+introduce hand = hPutStrLn hand "Welcome to the chat Server!"
+    >> hPutStrLn hand "Enter \":q\" or close telnet to quit"
+
+quitCheck :: String -> Bool
+quitCheck str
+    | length str < 2 = False
+    | head str == ':' && (str !! 1) == 'q' = True
+    | otherwise = False

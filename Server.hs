@@ -18,35 +18,9 @@ import Chat
 main :: IO ()
 main = withSocketsDo $ do
     portStr <- getEnv "CHAT_SERVER_PORT"
-    {-let port = read portStr :: Int
-    --now we grab our address information
-    putStrLn "Grabbing server information"
-    addrinfo <- getAddrInfo 
-                (Just (defaultHints {addrFlags = [AI_PASSIVE]})) 
-                Nothing 
-                (Just portStr)
-    let address = head addrinfo
+    sock <- listenOn $ Service portStr
+    putStrLn $ "Listening on port " ++ portStr
     
-    --set up TCP (Stream) socket
-    putStrLn "creating socket"
-    sock <- socket (addrFamily address) Stream defaultProtocol
-    setSocketOption sock ReuseAddr 1
-    
-    --attempt to bind
-    putStrLn "binding to socket"
-    bindSocket sock (addrAddress address)
-    
-    --listen on socket
-    putStrLn "listening on socket"
-    listen sock 10
-    
-    var <- newMVar []
-    
-    --call function to accept connections
-    putStrLn "accepting connections"
-    -}
-    sock <- listenOn portStr
-    putStrLn "Listening on port" ++ portStr
     var <- newMVar []
     acceptCons sock var
 
@@ -55,9 +29,9 @@ main = withSocketsDo $ do
 
 acceptCons :: Socket -> MVar [User] -> IO ()
 acceptCons sock var = do
-    (hand,conn, client) <- accept sock
-    putStrLn $ "Client connected from ip: " ++ (show client) 
-    forkIO (handleClient conn var)
+    (handle,connHost, clientPort) <- accept sock
+    putStrLn $ "Client connected from: " ++ connHost
+    forkIO (handleClient handle var)
     acceptCons sock var
 
 {-
@@ -67,9 +41,8 @@ to the user. It then passes the socket off
 to the text processing function chat 
 -}
 
-handleClient :: Socket -> MVar [User] -> IO ()
-handleClient sock var= do
-    hand <- socketToHandle sock ReadWriteMode
+handleClient :: Handle -> MVar [User] -> IO ()
+handleClient hand var= do
     hSetNewlineMode hand (NewlineMode CRLF CRLF)
     hSetBuffering hand LineBuffering
     introduce hand

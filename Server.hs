@@ -4,7 +4,8 @@
 -}
 module Main (main) where
 
-import Network.Socket
+import Network
+--import Network.Socket
 import Network.BSD
 import Control.Concurrent
 import Control.Concurrent.MVar
@@ -17,7 +18,7 @@ import Chat
 main :: IO ()
 main = withSocketsDo $ do
     portStr <- getEnv "CHAT_SERVER_PORT"
-    let port = read portStr :: Int
+    {-let port = read portStr :: Int
     --now we grab our address information
     putStrLn "Grabbing server information"
     addrinfo <- getAddrInfo 
@@ -43,6 +44,10 @@ main = withSocketsDo $ do
     
     --call function to accept connections
     putStrLn "accepting connections"
+    -}
+    sock <- listenOn portStr
+    putStrLn "Listening on port" ++ portStr
+    var <- newMVar []
     acceptCons sock var
 
 --acceptCons: loops and accepts connections and then spawns child procs
@@ -50,7 +55,7 @@ main = withSocketsDo $ do
 
 acceptCons :: Socket -> MVar [User] -> IO ()
 acceptCons sock var = do
-    (conn, client) <- accept sock
+    (hand,conn, client) <- accept sock
     putStrLn $ "Client connected from ip: " ++ (show client) 
     forkIO (handleClient conn var)
     acceptCons sock var
@@ -65,6 +70,7 @@ to the text processing function chat
 handleClient :: Socket -> MVar [User] -> IO ()
 handleClient sock var= do
     hand <- socketToHandle sock ReadWriteMode
+    hSetNewlineMode hand (NewlineMode CRLF CRLF)
     hSetBuffering hand LineBuffering
     introduce hand
     newUser <- joinUser hand var
@@ -82,7 +88,7 @@ chat use var = do
             hClose hand
         else do
             recv <- hGetLine hand
-            if (quitCheck recv)
+            if (recv == ":q")
                 then do
                     putStrLn "Closing client"
                     userQuit use var

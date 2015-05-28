@@ -2,13 +2,16 @@
 - chatServer Library
 -}
 
-module Chat (User(User),han,joinUser,broadcastMessage,userQuit) where
+module Chat (runServer) where
 
-import System.IO
+import Control.Exception.Base
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.MVar
-import Control.Exception.Base
+import Network
+import System.Environment
+import System.IO
+
 
 data User = User {ident :: Int
                  ,han :: Handle}
@@ -21,11 +24,11 @@ writeMessage :: String -> User -> IO ()
 writeMessage str u = hPutStrLn (han u) str
 
 joinUser :: Handle -> MVar [User] -> IO User
-joinUser han var = do
+joinUser handle var = do
     ls <- takeMVar var
     let biggestUser = grabUserName ls
-    u <- evaluate $ User (biggestUser + 1) han
-    newList <- evaluate (u:ls)
+    u <- evaluate $ User (biggestUser + 1) handle
+    let newList = (u:ls)
     mapM_ (writeMessage ((show u) ++ " has joined")) newList
     putMVar var newList
     return u where
@@ -53,4 +56,74 @@ userQuit u var = do
         remUser user (x:xs)
             | user == x = xs
             | otherwise = x : remUser user xs
+
+------------------------------------------------------------------------
+{- All the socket function and socket handlers -}
+
+
+--runServer: Set up sockets and start the server
+runServer :: IO ()
+runServer = withSocketsDo $ do
+    portStr <- getEnv "CHAT_SERVER_PORT"
+    sock <- listenOn $ Service portStr
+    putStrLn $ "Listening on port " ++ portStr
     
+    var <- newMVar []
+    acceptCons sock var
+
+--acceptCons: loops and accepts connections and then spawns child procs
+--to handle clients
+
+acceptCons :: Socket -> MVar [User] -> IO ()
+acceptCons sock var = do
+    (handle,connHost, clientPort) <- accept sock
+    putStrLn $ "Client connected from: " ++ connHost
+    forkIO (handleClient handle var)
+    acceptCons sock var
+
+{-
+handleClient: takes in the new sockets and 
+initializes the user in the user list and prints instructions
+to the user. It then passes the socket off 
+to the text processing function chat 
+-}
+
+handleClient :: Handle -> MVar [User] -> IO ()
+handleClient hand var= do
+    hSetNewlineMode hand (NewlineMode CRLF CRLF)
+    hSetBuffering hand LineBuffering
+    introduce hand
+    newUser <- joinUser hand var
+    chat newUser var
+
+chat :: User -> MVar [User] -> IO ()
+chat use var = do
+    let hand = han use
+    end <- hIsEOF hand
+    if end
+        then do
+            putStrLn "Closing client"
+            userQuit use var
+            --no goodbye because client has closed connection
+            hClose hand
+        else do
+            recv <- hGetLine hand
+            if (recv == ":q")
+                then do
+                    userQuit use var
+                    hPutStrLn hand "Goodbye!"
+                    hClose hand
+                else do
+                    userList <- takeMVar var
+                    broadcastMessage 
+                        use 
+                        ((show use) ++ ": " ++ recv) 
+                        userList
+                    putMVar var userList
+                    chat use var
+
+--introduce: send a welcome message
+introduce :: Handle -> IO ()
+introduce hand = do
+    hPutStrLn hand "Welcome to the chat Server!"
+    hPutStrLn hand "Enter \":q\" or close telnet to quit"

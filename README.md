@@ -25,6 +25,9 @@ to run the tests, run:
 * or you may execute `cabal run`
 * You may use telnet as a client, go ahead and connect to the ip of
 the server at the port pointed to by the environment variable
+* I have provided in the github repo a quick bash script that
+calls telnet with the desired parameters. It's syntax is: 
+ `./chat_client 128.135.221.121` or `./chat_client localhost`
 
 ## Using telnet as a client
 * just connect via telnet as mentioned above

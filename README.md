@@ -6,7 +6,7 @@
 
 ##Build instructions:
 * Clone the repository or untar the cabal sdist tar.gz file
-* You will need the Network and HSpec packages so make sure that you build
+* You will need the Network and Hspec packages so make sure that you build
 from a cabal sandbox with these packages installed or have these 
 packages globally installed.
 
@@ -21,8 +21,8 @@ to run the tests, run:
 
 ##Executing instructions
 * set the CHAT_SERVER_PORT environment variable
-* `dist/build/chat/chat`
-
+* to run it execute `dist/build/chat/chat`
+* or you may execute `cabal run`
 * You may use telnet as a client, go ahead and connect to the ip of
 the server at the port pointed to by the environment variable
 

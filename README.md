@@ -26,7 +26,7 @@ to run the tests, run:
 * You may use telnet as a client, go ahead and connect to the ip of
 the server at the port pointed to by the environment variable
 * I have provided in the github repo a quick bash script that
-calls telnet with the desired parameters. It's syntax is: 
+calls telnet with the desired parameters. Its syntax is: 
  `./chat_client 128.135.221.121` or `./chat_client localhost`
 
 ## Using telnet as a client

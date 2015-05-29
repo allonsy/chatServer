@@ -1,6 +1,6 @@
 {- Alec Snyder
 - lab 2 chat server program
-- following networking from O'sullivan's Real World Haskell
+- runner of runServer from the Chat library
 -}
 module Main (main) where
 

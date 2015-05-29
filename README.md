@@ -1,10 +1,12 @@
 # chatServer By Alec Snyder
 * Basic Chat Server implemented in haskell
 * chat room like functionality
+* github link: github link: https://github.com/allonsy/chatServer
+* email: alsnyder@uchicago.edu or linuxbash8@gmail.com
 
 ##Build instructions:
-*Clone the repository or untar the cabal sdist tar.gz file
-*You will need the Network and HSpec packages so make sure that you build
+* Clone the repository or untar the cabal sdist tar.gz file
+* You will need the Network and HSpec packages so make sure that you build
 from a cabal sandbox with these packages installed or have these 
 packages globally installed.
 

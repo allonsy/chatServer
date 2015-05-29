@@ -1,5 +1,6 @@
 {- Alec Snyder
 - Test Suite for chatServer
+- github link: https://github.com/allonsy/chatServer
 -}
 
 module Main (main) where

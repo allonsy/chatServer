@@ -1,6 +1,7 @@
 {- Alec Snyder
 - lab 2 chat server program
 - runner of runServer from the Chat library
+- github link: https://github.com/allonsy/chatServer
 -}
 module Main (main) where
 

@@ -1,6 +1,7 @@
 {- Alec Snyder
 - chatServer Library
 - includes socket functions
+- github link: https://github.com/allonsy/chatServer
 -}
 
 module Chat (runServer) where

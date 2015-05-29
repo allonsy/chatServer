@@ -18,8 +18,6 @@ to run the tests, run:
 * `cabal configure --enable-tests`
 * `cabal test`
 
-* the executable will default to the dist/build/sokal directory so if you 
-want the executable anywhere else go ahead and move it
 
 ##Executing instructions
 * set the CHAT_SERVER_PORT environment variable
